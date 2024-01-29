@@ -19,6 +19,7 @@
 
 ## Secret Scanning Custom Patterns
 - [secret-scanning-custom-patterns](https://github.com/advanced-security/secret-scanning-custom-patterns) - Examples of Custom Secret Scanning Patterns
+- [secret-scanning-tools](https://github.com/advanced-security/secret-scanning-tools) - Testing Suite for GitHub Secret Scanning Custom Patterns
 
 ## Secret Remediation
 - [GSSAR](https://github.com/advanced-security/GSSAR) - GitHub Secret Scanning Auto Remediator (GSSAR)
