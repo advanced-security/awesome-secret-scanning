@@ -2,6 +2,9 @@
 
 > A curated list of GitHub Advanced Security secret scanning resources.
 
+## Secret Scanning Patterns
+- [GitHub Secret Scanning Vendor Patterns](https://aegilops.github.io/patterns.html) - a DataTables.js powered table, to sort by which are supported by validity checks, push protection, etc.
+- [advanced-security-material](https://github.com/advanced-security/advanced-security-material/blob/main/GHAS-on-GHES-feature-matrix.md#secret-scanning) - GitHub Enterprise Server Version/Feature Matrix
 
 ## GitHub Actions
 - [secret-scanning-review-action](https://github.com/advanced-security/secret-scanning-review-action) - Action to detect if a secret is initially detected in a PR commit
@@ -10,6 +13,9 @@
 ## GitHub Apps
 - [policy-as-code](https://github.com/advanced-security/policy-as-code) - GitHub Advanced Security Policy as Code designed to allow users to configure their Risk threshold for security issues reported by GitHub Code Scanning, Secret Scanning and Dependabot Security.
 - [probot-security-alerts](https://github.com/advanced-security/probot-security-alerts) - Sample GitHub App which monitors and enforces rules for code scanning, Dependabot, and secret scanning alerts
+
+## Tools
+- [ghes-secret-scanning-automation-tools](https://github.com/kraiouchkine/ghes-secret-scanning-automation-tools) - enable automatic resolution and reopening of Secret Scanning alerts on GitHub Enterprise Server
 
 ## Secret Scanning Custom Patterns
 - [secret-scanning-custom-patterns](https://github.com/advanced-security/secret-scanning-custom-patterns) - Examples of Custom Secret Scanning Patterns
