@@ -1,6 +1,6 @@
 # Awesome GitHub secret scanning  [![Awesome](https://awesome.re/badge.svg)](https://awesome.re)
 
-> A curated list of GitHub Advanced Security secret scanning resources.
+> A curated list of awesome GitHub Advanced Security secret scanning resources.
 
 ## Secret Scanning Patterns
 - [GitHub Secret Scanning Vendor Patterns](https://aegilops.github.io/patterns.html) - a DataTables.js powered table, to sort by which are supported by validity checks, push protection, etc.
