@@ -21,7 +21,7 @@
 - [probot-security-alerts](https://github.com/advanced-security/probot-security-alerts) - Sample GitHub App which monitors and enforces rules for code scanning, Dependabot, and secret scanning alerts
 
 ## Tools
-- [ghes-secret-scanning-automation-tools](https://github.com/kraiouchkine/ghes-secret-scanning-automation-tools) - enable automatic resolution and reopening of Secret Scanning alerts on GitHub Enterprise Server
+- [ghes-secret-scanning-automation-tools](https://github.com/nicolaswill/ghes-secret-scanning-automation-tools) - enable automatic resolution and reopening of Secret Scanning alerts on GitHub Enterprise Server
 
 ## Secret Remediation
 - [GSSAR](https://github.com/advanced-security/GSSAR) - GitHub Secret Scanning Auto Remediator (GSSAR)
