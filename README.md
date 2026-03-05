@@ -22,6 +22,7 @@
 
 ## Tools
 - [ghes-secret-scanning-automation-tools](https://github.com/kraiouchkine/ghes-secret-scanning-automation-tools) - enable automatic resolution and reopening of Secret Scanning alerts on GitHub Enterprise Server
+- [secret-scan](https://github.com/harshahemanth/secret-scan) - A fast, zero-dependency CLI tool to detect secrets in source code with 35+ detection rules, SARIF output for GitHub Code Scanning, severity filtering, and `.secretscanignore` support
 
 ## Secret Remediation
 - [GSSAR](https://github.com/advanced-security/GSSAR) - GitHub Secret Scanning Auto Remediator (GSSAR)
