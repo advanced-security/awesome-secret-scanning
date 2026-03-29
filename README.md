@@ -21,6 +21,7 @@
 - [probot-security-alerts](https://github.com/advanced-security/probot-security-alerts) - Sample GitHub App which monitors and enforces rules for code scanning, Dependabot, and secret scanning alerts
 
 ## Tools
+- [push-sentinel](https://github.com/Pmaind/pre-push-secrets) - Zero-dependency Node.js CLI that installs as a pre-push git hook and scans the exact diff being pushed for secrets (AWS keys, GitHub tokens, private keys, OpenAI/Anthropic API keys). Supports `.push-sentinel-ignore` for suppressing false positives.
 - [ghes-secret-scanning-automation-tools](https://github.com/kraiouchkine/ghes-secret-scanning-automation-tools) - enable automatic resolution and reopening of Secret Scanning alerts on GitHub Enterprise Server
 
 ## Secret Remediation
