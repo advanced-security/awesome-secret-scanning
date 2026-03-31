@@ -24,6 +24,7 @@ safe-outputs:
     title-prefix: "🎉 "
     draft: false
     expires: 14
+    preserve-branch-name: true
   noop:
     max: 1
 steps:
@@ -245,6 +246,8 @@ highlights what changed. Examples:
 2. The changelog from Step 6
 3. A comparison table showing before/after counts for any changed metrics
 4. Links to the source documentation
+5. A link to the rendered README on the PR branch for easy review:
+   `https://github.com/advanced-security/awesome-secret-scanning/blob/secret-scanning-update-YYYY-MM-DD/README.md`
 
 Example tone:
 > ## 🎉 Secret Scanning Coverage Keeps Growing!

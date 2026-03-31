@@ -225,11 +225,15 @@ $comment = @"
 | Inventory Commit History | [Docs](https://github.com/github/docs/blob/main/src/secret-scanning/data/pattern-docs/ghec/public-docs.yml)
 | Secret Scanning Changelog | [Changelog](https://github.blog/changelog/?label=application-security) |
 
-# GitHub Secret Scanning GitHub Enterprise Server | $($(Get-Date -AsUTC).ToString('u'))
+<details><summary>GHES Versions / Count</summary>
+<p>
 
-| GHES Version| Count | Push Protection | Validity Check | Base64 | Extended Metadata |
+| GHES Version | Count | Push Protection | Validity Check | Base64 | Extended Metadata |
 | --- | --- | --- | --- | --- | --- |
 $($GHESInventory | ForEach-Object { "| [$($_.GHESVersion)](https://docs.github.com/en/enterprise-server@$($_.GHESVersion)/code-security/reference/secret-security/supported-secret-scanning-patterns) | $($_.Count) | $($_.PushProtectionCount) | $($_.ValidityCheckCount) | $($_.Base64Count) | $($_.ExtendedMetadataCount) |" } | Out-String)
+
+</p>
+</details>
 
 # Azure DevOps
 | Secret Scanning Inventory |$($(Get-Date -AsUTC).ToString('u')) |
