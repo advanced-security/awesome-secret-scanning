@@ -55,8 +55,10 @@
 </details>
 
 ## Secret Scanning Custom Patterns
+
 - [advanced-security/secret-scanning-custom-patterns](https://github.com/advanced-security/secret-scanning-custom-patterns) - Examples of Custom Secret Scanning Patterns
 - [advanced-security/secret-scanning-tools](https://github.com/advanced-security/secret-scanning-tools) - Testing Suite for GitHub Secret Scanning Custom Patterns
+- [advanced-security/secret-protection-custom-pattern-automation](https://github.com/advanced-security/secret-protection-custom-pattern-automation) - Automate GitHub secret protection custom patterns
 
 ## Notifications
 - [advanced-security/secret-scanning-review-action](https://github.com/advanced-security/secret-scanning-review-action) - Action to detect if a secret is initially detected in a PR commit
