@@ -23,9 +23,10 @@
 | Inventory Commit History | [Docs](https://github.com/github/docs/blob/main/src/secret-scanning/data/pattern-docs/ghec/public-docs.yml)
 | Secret Scanning Changelog | [Changelog](https://github.blog/changelog/?label=application-security) |
 
-# GitHub Secret Scanning GitHub Enterprise Server | 2026-03-31 19:20:38Z
+<details><summary>GHES Versions / Count</summary>
+<p>
 
-| GHES Version| Count | Push Protection | Validity Check | Base64 | Extended Metadata |
+| GHES Version | Count | Push Protection | Validity Check | Base64 | Extended Metadata |
 | --- | --- | --- | --- | --- | --- |
 | [3.14](https://docs.github.com/en/enterprise-server@3.14/code-security/reference/secret-security/supported-secret-scanning-patterns) | 318 | 190 | 9 | 0 | 0 |
 | [3.15](https://docs.github.com/en/enterprise-server@3.15/code-security/reference/secret-security/supported-secret-scanning-patterns) | 284 | 181 | 5 | 0 | 0 |
@@ -36,6 +37,9 @@
 | [3.20](https://docs.github.com/en/enterprise-server@3.20/code-security/reference/secret-security/supported-secret-scanning-patterns) | 478 | 365 | 122 | 20 | 0 |
 | [3.21](https://docs.github.com/en/enterprise-server@3.21/code-security/reference/secret-security/supported-secret-scanning-patterns) | 501 | 417 | 127 | 20 | 5 |
 
+
+</p>
+</details>
 
 # Azure DevOps
 | Secret Scanning Inventory |2026-03-31 19:20:38Z |
