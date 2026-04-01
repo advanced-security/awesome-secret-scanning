@@ -187,7 +187,36 @@ For each metric:
     → WARNING: minor decrease (log it but allow if only 1-2 metrics)
 ```
 
-If no regressions are detected, proceed to Step 6.
+If no regressions are detected, proceed to Step 5c.
+
+### Step 5c: Short-Circuit if Counts Are Unchanged
+
+Compare the newly parsed counts against the cached counts from Step 1. The key
+metrics to compare are:
+
+- `gh_partner_count` (GitHub Partner Secret Types)
+- `gh_push_count` (GitHub Push Protection count)
+- `gh_validity_count` (GitHub Validity Check count)
+- `ado_partner_count` (ADO Partner Secret Types)
+- `ado_push_count` (ADO Push Protection count)
+- `ado_validity_count` (ADO Validity Check count)
+
+If **none of these counts have changed** compared to the cached values, the
+upstream documentation changed (formatting, metadata, timestamps, etc.) but no
+new patterns or coverage improvements were added. This is not worth a PR.
+
+Call the `noop` safe output with the message:
+
+> Upstream documentation updated (commit SHAs changed) but pattern counts are
+> unchanged. GitHub: {gh_partner_count} partner types, {gh_push_count} with
+> push protection. ADO: {ado_partner_count} partner types, {ado_push_count}
+> with push protection. No README update needed.
+
+Then update the cache (commit SHAs, timestamp, and counts) and stop — do not
+proceed to later steps. **Do NOT open a PR for documentation-only changes that
+don't affect pattern counts.**
+
+Only proceed to Step 6 if at least one count has changed.
 
 ### Step 6: Build the Changelog
 

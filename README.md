@@ -10,7 +10,7 @@
 
 # GitHub
 
-| [Secret Protection Inventory](https://docs.github.com/en/enterprise-cloud@latest/code-security/reference/secret-security/supported-secret-scanning-patterns) |2026-03-31 23:00:57Z |
+| [Secret Protection Inventory](https://docs.github.com/en/enterprise-cloud@latest/code-security/reference/secret-security/supported-secret-scanning-patterns) |2026-03-31 19:20:38Z |
 | --- | --- |
 | Number of Partner Secret Types | 501 (61 with variants) |
 | Number of Unique Partner Providers | 196 |
@@ -42,7 +42,7 @@
 </details>
 
 # Azure DevOps
-| Secret Scanning Inventory |2026-03-31 23:00:57Z |
+| Secret Scanning Inventory |2026-03-31 19:20:38Z |
 | --- | --- |
 | Number of Partner Secret Types | [332](https://learn.microsoft.com/en-us/azure/devops/repos/security/github-advanced-security-secret-scan-patterns?view=azure-devops#partner-provider-patterns) |
 | Number of Secret Types with Push Protection | 171 |
@@ -50,7 +50,7 @@
 | Non-Partner Patterns | [18](https://learn.microsoft.com/en-us/azure/devops/repos/security/github-advanced-security-secret-scan-patterns?view=azure-devops#non-provider-patterns) ( 6 with validity checks) |
 | Copilot Secret Scanning Patterns | 0 |
 | Inventory Commit History | [Docs](https://raw.githubusercontent.com/MicrosoftDocs/azure-devops-docs/refs/heads/main/docs/repos/security/includes/provider-table.md) [Docs NonPartner](https://raw.githubusercontent.com/MicrosoftDocs/azure-devops-docs/refs/heads/main/docs/repos/security/includes/non-provider-table.md)
-| Secret Scanning Changes | [Commits](https://github.com/MicrosoftDocs/azure-devops-docs/commits/main/docs/repos/security/includes/provider-table.md) [Commits Non-Partner](https://github.com/MicrosoftDocs/azure-devops-docs/commits/main/docs/docs/repos/security/includes/non-provider-table.md)|
+| Secret Scanning Changes | [Commits](https://github.com/MicrosoftDocs/azure-devops-docs/commits/main/docs/repos/security/includes/provider-table.md) [Commits Non-Partner](https://github.com/MicrosoftDocs/azure-devops-docs/commits/main/docs/repos/security/includes/non-provider-table.md)|
 
 </details>
 
