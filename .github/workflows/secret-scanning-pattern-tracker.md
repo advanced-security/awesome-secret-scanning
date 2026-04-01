@@ -59,13 +59,7 @@ Expected schema:
   "github_docs_sha": "<commit SHA>",
   "ado_provider_sha": "<commit SHA>",
   "ado_non_provider_sha": "<commit SHA>",
-  "last_run": "2026-03-17T00-00-00",
-  "gh_partner_count": 0,
-  "gh_push_count": 0,
-  "gh_validity_count": 0,
-  "ado_partner_count": 0,
-  "ado_push_count": 0,
-  "ado_validity_count": 0
+  "last_run": "2026-03-17T00-00-00"
 }
 ```
 
@@ -143,17 +137,18 @@ and is fragile — any formatting changes to the source docs (table structure,
 column renames, heading changes) can cause the script to silently return lower
 counts or zeros.
 
-Before proceeding, check for regressions. Compare every parsed count against
-the cached values from Step 1 (skip this check on the first run when there are
-no cached values):
+Before proceeding, check for regressions. Read the current `README.md` to
+extract the last published counts and compare every newly parsed count against
+those values (skip this check on the first run when the README has no published
+counts yet):
 
-1. **Zero or null counts**: If ANY metric parses as 0 or null when the cached
-   value was non-zero, this is almost certainly a parsing failure — NOT a real
-   change. Secret scanning patterns are never mass-deleted.
+1. **Zero or null counts**: If ANY metric parses as 0 or null when the README
+   shows a non-zero value, this is almost certainly a parsing failure — NOT a
+   real change. Secret scanning patterns are never mass-deleted.
 
 2. **Significant drops**: If any count decreased by more than **5%** compared
-   to cached values, treat it as suspicious. A drop of 1-2 patterns is plausible
-   (rare provider removal), but larger drops indicate a parsing issue.
+   to the README values, treat it as suspicious. A drop of 1-2 patterns is
+   plausible (rare provider removal), but larger drops indicate a parsing issue.
 
 3. **All counts dropped**: If multiple metrics across both GitHub and ADO all
    decreased simultaneously, the script is broken.
@@ -161,7 +156,6 @@ no cached values):
 **If a regression is detected:**
 
 - Do NOT update the README — leave it untouched with the last known-good data.
-- Do NOT update the cached counts (keep the last known-good values).
 - DO update the cached commit SHAs and timestamp so we don't reprocess.
 - Open a self-healing PR that **fixes the counting script**
   (`pwsh/Count-SecretScanningPatterns.ps1`) to handle the upstream formatting
@@ -179,15 +173,42 @@ no cached values):
 
 ```
 For each metric:
-  if cached_value > 0 and new_value == 0:
+  if readme_value > 0 and new_value == 0:
     → REGRESSION: parsing failure (metric went to zero)
-  if cached_value > 0 and new_value < cached_value * 0.95:
+  if readme_value > 0 and new_value < readme_value * 0.95:
     → REGRESSION: suspicious drop (>5% decrease)
-  if new_value < cached_value:
+  if new_value < readme_value:
     → WARNING: minor decrease (log it but allow if only 1-2 metrics)
 ```
 
-If no regressions are detected, proceed to Step 6.
+If no regressions are detected, proceed to Step 5c.
+
+### Step 5c: Short-Circuit if README Already Reflects Current Counts
+
+Read the current `README.md` and extract the key pattern counts that are
+already published there. Compare them against the counts just parsed from the
+script output:
+
+- GitHub: Partner Secret Types, Push Protection count, Validity Check count
+- ADO: Partner Secret Types, Push Protection count, Validity Check count
+
+If **all of these counts already match** what is in the README, then the
+upstream docs changed in a way that did not affect any pattern counts
+(e.g. formatting edits, metadata changes). There is nothing to update.
+
+Call the `noop` safe output with the message:
+
+> Upstream documentation updated (commit SHAs changed) but pattern counts are
+> unchanged from what is already published in the README. GitHub:
+> {gh_partner_count} partner types, {gh_push_count} with push protection. ADO:
+> {ado_partner_count} partner types, {ado_push_count} with push protection. No
+> README update needed.
+
+Then update the cache (commit SHAs and timestamp) and stop — do not proceed to
+later steps. **Do NOT open a PR for documentation-only changes that don't
+affect pattern counts.**
+
+Only proceed to Step 6 if at least one count differs from the README.
 
 ### Step 6: Build the Changelog
 
@@ -275,13 +296,7 @@ Save the updated state to cache-memory as `last-check-state.json`:
   "github_docs_sha": "<new SHA from Step 2>",
   "ado_provider_sha": "<new SHA from Step 2>",
   "ado_non_provider_sha": "<new SHA from Step 2>",
-  "last_run": "<current timestamp YYYY-MM-DDTHH-MM-SS>",
-  "gh_partner_count": <new count>,
-  "gh_push_count": <new count>,
-  "gh_validity_count": <new count>,
-  "ado_partner_count": <new count>,
-  "ado_push_count": <new count>,
-  "ado_validity_count": <new count>
+  "last_run": "<current timestamp YYYY-MM-DDTHH-MM-SS>"
 }
 ```
 
