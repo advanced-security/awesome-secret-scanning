@@ -329,11 +329,15 @@ Fill in the actual values — do not leave placeholders.
 
 ## Guidelines
 
+- **You MUST always call exactly one safe output tool before finishing.** Either
+  call `create-pull-request` to open a PR with changes, or call `noop` with an
+  explanatory message if no PR is needed. Never finish without calling a safe
+  output — doing so causes the workflow to report a failure and file an issue.
 - Check **all three** sources before deciding whether to short-circuit.
 - Include commit SHA links in the changelog for traceability.
 - Keep the collapsible summary in the README compact but informative.
 - Be celebratory! New patterns and coverage improvements are wins for security.
-- If the counting script fails, still update the cache and note the error in the
-  workflow summary.
+- If the counting script fails, still update the cache, call `noop` with a
+  message describing the error, and note the error in the workflow summary.
 - The collapsible block should always reflect the latest data, even if only one
   source changed.
