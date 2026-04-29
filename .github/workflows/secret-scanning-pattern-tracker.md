@@ -34,310 +34,99 @@ steps:
 
 # 🔍 Secret Scanning Pattern Tracker
 
-You are a monitoring agent that tracks changes to secret scanning documentation
-across GitHub and Azure DevOps. When you detect new patterns or coverage
-improvements, you update the README with a fresh summary and open a celebratory
-pull request.
+## ⚠️ CRITICAL RULE — Read This First
 
-## Sources to Monitor
+**You MUST call exactly one safe output tool before finishing — no exceptions.**
 
-| # | Source | Repository | Path |
-|---|--------|-----------|------|
-| 1 | GitHub Pattern Docs | `github/docs` | `src/secret-scanning/data/pattern-docs/` |
-| 2 | ADO Provider Table | `MicrosoftDocs/azure-devops-docs` | `docs/repos/security/includes/provider-table.md` |
-| 3 | ADO Non-Provider Table | `MicrosoftDocs/azure-devops-docs` | `docs/repos/security/includes/non-provider-table.md` |
+- Call `noop` if no README update is needed.
+- Call `create-pull-request` if the README was updated.
+- If anything fails or errors, call `noop` with an error description.
+- **Never finish without calling a safe output.** Doing so files a failure issue.
 
-## Your Task
+## Overview
 
-### Step 1: Read Cached State
+You monitor secret scanning documentation across GitHub and Azure DevOps.
+When pattern counts change, you update the README and open a PR.
 
-Read from cache-memory a file called `last-check-state.json`.
-Expected schema:
+## Step 1 — Check for Source Changes
+
+First, read `last-check-state.json` from cache-memory. Schema:
 
 ```json
 {
-  "github_docs_sha": "<commit SHA>",
-  "ado_provider_sha": "<commit SHA>",
-  "ado_non_provider_sha": "<commit SHA>",
-  "last_run": "2026-03-17T00-00-00"
+  "github_docs_sha": "<SHA>",
+  "ado_provider_sha": "<SHA>",
+  "ado_non_provider_sha": "<SHA>",
+  "last_run": "YYYY-MM-DDTHH-MM-SS"
 }
 ```
 
-If no cache file exists this is the **first run** — treat all sources as changed
-and skip the comparison step.
-
-### Step 2: Check for New Commits
-
-Use the GitHub `list_commits` tool (via the repos toolset) to fetch the most
-recent commit for each source:
-
-1. **GitHub Pattern Docs** — list commits on `github/docs`, path
-   `src/secret-scanning/data/pattern-docs/`, take the first result.
-2. **ADO Provider Table** — list commits on `MicrosoftDocs/azure-devops-docs`,
-   path `docs/repos/security/includes/provider-table.md`, take the first result.
-3. **ADO Non-Provider Table** — list commits on
-   `MicrosoftDocs/azure-devops-docs`, path
-   `docs/repos/security/includes/non-provider-table.md`, take the first result.
-
-Compare each latest commit SHA against the corresponding cached value.
-
-### Step 3: Short-Circuit if No Changes
-
-If **all three** sources have the same latest commit SHA as cached, no
-documentation has changed. Call the `noop` safe output with the message:
-
-> No changes detected in secret scanning documentation. All sources unchanged
-> since last check on {last_run}.
-
-Then **update the cache with the current timestamp** and stop — do not proceed
-to later steps.
-
-### Step 4: Run the Pattern Counter Script
-
-Run the PowerShell counting script to get the latest pattern counts:
-
-```bash
-pwsh -File ./pwsh/Count-SecretScanningPatterns.ps1 -OutputFile /tmp/pattern-counts.md
-```
+Then fetch the latest commit SHA for each source using `list_commits` (1 result each):
 
-Read the output file `/tmp/pattern-counts.md`. This contains the full markdown
-tables with current counts for GitHub and Azure DevOps patterns.
-
-### Step 5: Parse Counts and Detect Changes
-
-Parse the script output to extract key metrics. Look for these values in the
-markdown tables:
-
-**GitHub metrics:**
-- Partner Secret Types count (e.g. "250 (42 with variants)")
-- Unique Partner Providers count
-- Push Protection count
-- Validity Check count
-- Base64 Support count
-- Extended Metadata count
-- Non-Partner Patterns count
-- Copilot Secret Scanning Patterns count
+1. `github/docs` — path `src/secret-scanning/data/pattern-docs/`
+2. `MicrosoftDocs/azure-devops-docs` — path `docs/repos/security/includes/provider-table.md`
+3. `MicrosoftDocs/azure-devops-docs` — path `docs/repos/security/includes/non-provider-table.md`
 
-**Azure DevOps metrics:**
-- Partner Secret Types count
-- Push Protection count
-- Validity Check count
-- Non-Partner Patterns count
+If **all three SHAs match** the cache → call `noop` with message
+"No changes detected since {last_run}" → update cache timestamp → **stop**.
 
-Compare these counts against the cached values from Step 1. Identify:
-- **New patterns added** — count increased
-- **Patterns removed** — count decreased (rare but possible)
-- **Feature coverage expanded** — push protection, validity, base64, or
-  extended metadata counts increased
+If cache is missing (first run), treat all sources as changed.
 
-### Step 5b: Regression Check ⚠️
+## Step 2 — Run the Counting Script
 
-**This is critical.** The counting script parses upstream markdown documentation
-and is fragile — any formatting changes to the source docs (table structure,
-column renames, heading changes) can cause the script to silently return lower
-counts or zeros.
-
-Before proceeding, check for regressions. Read the current `README.md` to
-extract the last published counts and compare every newly parsed count against
-those values (skip this check on the first run when the README has no published
-counts yet):
+Run: `pwsh -File ./pwsh/Count-SecretScanningPatterns.ps1 -OutputFile /tmp/pattern-counts.md`
 
-1. **Zero or null counts**: If ANY metric parses as 0 or null when the README
-   shows a non-zero value, this is almost certainly a parsing failure — NOT a
-   real change. Secret scanning patterns are never mass-deleted.
+If the script fails or exits non-zero, call `noop` with the error message,
+update the cache SHAs, and **stop**.
 
-2. **Significant drops**: If any count decreased by more than **5%** compared
-   to the README values, treat it as suspicious. A drop of 1-2 patterns is
-   plausible (rare provider removal), but larger drops indicate a parsing issue.
+Read `/tmp/pattern-counts.md` — this has the full markdown output.
 
-3. **All counts dropped**: If multiple metrics across both GitHub and ADO all
-   decreased simultaneously, the script is broken.
+## Step 3 — Compare Counts Against README
 
-**If a regression is detected:**
+Read the current `README.md` and extract the published counts from the
+`<details><summary>📊 Pattern Counts` block:
 
-- Do NOT update the README — leave it untouched with the last known-good data.
-- DO update the cached commit SHAs and timestamp so we don't reprocess.
-- Open a self-healing PR that **fixes the counting script**
-  (`pwsh/Count-SecretScanningPatterns.ps1`) to handle the upstream formatting
-  changes. Inspect the source docs that changed, identify what broke the
-  parsing, and update the script's regex or parsing logic accordingly. Use a
-  different tone:
-  - Title: `🔧 Secret scanning pattern counter needs attention`
-  - Body: Include which metrics regressed, the before/after values, what
-    changed in the upstream docs, and what fix was applied to the script. Link
-    to the source commits that caused the breakage. Tag the PR with a `bug`
-    label in addition to the usual labels.
-- Write a clear workflow summary noting the regression and the attempted fix.
+- GitHub: Partner Secret Types, Push Protection count
+- ADO: Partner Secret Types, Push Protection count
 
-**Example regression detection logic:**
+Parse the same counts from the script output (Step 2).
 
-```
-For each metric:
-  if readme_value > 0 and new_value == 0:
-    → REGRESSION: parsing failure (metric went to zero)
-  if readme_value > 0 and new_value < readme_value * 0.95:
-    → REGRESSION: suspicious drop (>5% decrease)
-  if new_value < readme_value:
-    → WARNING: minor decrease (log it but allow if only 1-2 metrics)
-```
-
-If no regressions are detected, proceed to Step 5c.
-
-### Step 5c: Short-Circuit if README Already Reflects Current Counts
-
-Read the current `README.md` and extract the key pattern counts that are
-already published there. Compare them against the counts just parsed from the
-script output:
-
-- GitHub: Partner Secret Types, Push Protection count, Validity Check count
-- ADO: Partner Secret Types, Push Protection count, Validity Check count
+**Regression check:** If any count dropped to 0, or decreased by more than 5%
+compared to the README, this is a script parsing failure — NOT a real change.
+Call `noop` with a message listing the regressed metrics and their
+before/after values. Update the cache SHAs and **stop**.
 
-If **all of these counts already match** what is in the README, then the
-upstream docs changed in a way that did not affect any pattern counts
-(e.g. formatting edits, metadata changes). There is nothing to update.
-
-Call the `noop` safe output with the message:
-
-> Upstream documentation updated (commit SHAs changed) but pattern counts are
-> unchanged from what is already published in the README. GitHub:
-> {gh_partner_count} partner types, {gh_push_count} with push protection. ADO:
-> {ado_partner_count} partner types, {ado_push_count} with push protection. No
-> README update needed.
-
-Then update the cache (commit SHAs and timestamp) and stop — do not proceed to
-later steps. **Do NOT open a PR for documentation-only changes that don't
-affect pattern counts.**
+**No change check:** If all counts match the README, the upstream change was
+cosmetic (no actual pattern count change). Call `noop` with a message like
+"Counts unchanged: GitHub {N} partners, ADO {N} partners". Update the cache
+SHAs and **stop**.
 
-Only proceed to Step 6 if at least one count differs from the README.
+## Step 4 — Update README and Open PR
 
-### Step 6: Build the Changelog
+Only reach this step if counts actually changed and no regressions detected.
 
-For every source whose latest commit SHA differs from the cached value:
+1. Read `README.md`. Find the existing `<details>` block whose summary contains
+   "Pattern Counts" and replace it entirely. Use this format:
 
-1. List the commits between the old cached SHA and the new SHA.
-2. Read the commit messages to understand what changed.
-3. Categorize each change:
-   - **🆕 Patterns Added** — new secret types or providers
-   - **📈 Coverage Expanded** — push protection, validity checks, base64, or
-     extended metadata improvements
-   - **📝 Documentation Changes** — formatting or structural edits
-
-Produce a changelog summary for the PR body.
-
-### Step 7: Update the README
-
-Read the current `README.md` file. Find the `## Secret Scanning Patterns`
-section. After the existing bullet points in that section and before the next
-`##` section, insert (or replace if already present) a collapsible details block
-with the pattern counts.
-
-The collapsible block should be placed between the last bullet point in the
-Secret Scanning Patterns section and the next section header. Look for an
-existing `<details>` block with the summary text containing
-"Pattern Counts" — if found, replace it entirely. If not found, insert
-it after the last line of content in the Secret Scanning Patterns section.
-
-Use this format — fill in the actual values from the script output:
-
-```markdown
-
-<details><summary>📊 Pattern Counts — GitHub: {gh_partner_count} partner types, {gh_push_count} with push protection | ADO: {ado_partner_count} partner types (Updated: YYYY-MM-DD)</summary>
-
-{paste the full markdown output from the counting script here}
-
-</details>
-```
-
-### Step 8: Create a Celebratory Pull Request
-
-Create a pull request with the README changes. The tone should be positive and
-celebratory — we want to highlight growth in secret scanning coverage! 🎉
-
-**Branch name**: `secret-scanning-update-YYYY-MM-DD`
-
-**PR Title** (the `🎉` prefix is added automatically): Choose a title that
-highlights what changed. Examples:
-- `Secret scanning adds 5 new partner patterns!`
-- `Push protection now covers 180+ secret types!`
-- `ADO secret scanning expands to 95 partner patterns!`
-- `Secret scanning pattern counts updated`
-
-**PR Body**: Include:
-1. A celebratory summary of what changed (use emoji liberally 🎉🚀📈)
-2. The changelog from Step 6
-3. A comparison table showing before/after counts for any changed metrics
-4. Links to the source documentation
-5. A link to the rendered README on the PR branch for easy review:
-   `https://github.com/advanced-security/awesome-secret-scanning/blob/secret-scanning-update-YYYY-MM-DD/README.md`
-
-Example tone:
-> ## 🎉 Secret Scanning Coverage Keeps Growing!
->
-> Great news! GitHub secret scanning has added **5 new partner patterns**,
-> bringing the total to **255 partner secret types** with **185 supporting
-> push protection**!
->
-> ### What Changed
-> | Metric | Before | After | Change |
-> | --- | --- | --- | --- |
-> | Partner Secret Types | 250 | 255 | +5 🆕 |
-> | Push Protection | 180 | 185 | +5 📈 |
->
-> ### Changelog
-> - Added Acme Corp API Key patterns ([abc1234](https://github.com/github/docs/commit/abc1234))
-> - ...
-
-### Step 9: Update Cache
-
-Save the updated state to cache-memory as `last-check-state.json`:
-
-```json
-{
-  "github_docs_sha": "<new SHA from Step 2>",
-  "ado_provider_sha": "<new SHA from Step 2>",
-  "ado_non_provider_sha": "<new SHA from Step 2>",
-  "last_run": "<current timestamp YYYY-MM-DDTHH-MM-SS>"
-}
-```
-
-Use filesystem-safe timestamp format `YYYY-MM-DDTHH-MM-SS` (no colons).
-
-**Always** update the cache even if the PR creation fails, so the next run does
-not re-process the same commits.
-
-### Step 10: Write the Workflow Summary
-
-Append a summary to `$GITHUB_STEP_SUMMARY`:
-
-```bash
-cat >> "$GITHUB_STEP_SUMMARY" << 'SUMMARY_EOF'
-## 🔍 Secret Scanning Pattern Tracker
-
-### Sources Checked
-| Source | Status | Latest Commit |
-| --- | --- | --- |
-| GitHub Pattern Docs | ✅ Changed / ⏸️ Unchanged | `<sha>` |
-| ADO Provider Table | ✅ Changed / ⏸️ Unchanged | `<sha>` |
-| ADO Non-Provider Table | ✅ Changed / ⏸️ Unchanged | `<sha>` |
-
-### Result
-🎉 PR opened to update README with latest pattern counts!
-SUMMARY_EOF
-```
-
-Fill in the actual values — do not leave placeholders.
+   ```
+   <details><summary>📊 Pattern Counts — GitHub: {N} partner types, {N} with push protection | ADO: {N} partner types (Updated: YYYY-MM-DD)</summary>
+
+   {full script output from /tmp/pattern-counts.md}
+
+   </details>
+   ```
+
+2. Call `create-pull-request` with:
+   - **Branch**: `secret-scanning-update-YYYY-MM-DD`
+   - **Title**: A short celebratory summary (e.g. "Secret scanning adds 5 new partner patterns!")
+   - **Body**: Before/after comparison table, links to source docs
+
+3. Update cache-memory `last-check-state.json` with new SHAs and timestamp
+   (format `YYYY-MM-DDTHH-MM-SS`, no colons).
 
 ## Guidelines
 
-- **You MUST always call exactly one safe output tool before finishing.** Either
-  call `create-pull-request` to open a PR with changes, or call `noop` with an
-  explanatory message if no PR is needed. Never finish without calling a safe
-  output — doing so causes the workflow to report a failure and file an issue.
-- Check **all three** sources before deciding whether to short-circuit.
-- Include commit SHA links in the changelog for traceability.
-- Keep the collapsible summary in the README compact but informative.
-- Be celebratory! New patterns and coverage improvements are wins for security.
-- If the counting script fails, still update the cache, call `noop` with a
-  message describing the error, and note the error in the workflow summary.
-- The collapsible block should always reflect the latest data, even if only one
-  source changed.
+- **Always call a safe output before finishing** — this is the #1 priority.
+- Always update the cache SHAs so we don't reprocess the same commits.
+- Be celebratory in PR titles and bodies 🎉🚀📈
+- Keep the collapsible README block compact but informative.
