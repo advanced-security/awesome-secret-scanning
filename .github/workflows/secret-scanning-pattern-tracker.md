@@ -27,6 +27,8 @@ safe-outputs:
     draft: false
     expires: 14
     preserve-branch-name: true
+    allowed-files:
+      - README.md
   noop:
     max: 1
 steps:
