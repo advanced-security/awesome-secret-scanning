@@ -88,18 +88,42 @@ Read `/tmp/pattern-counts.md` — this has the full markdown output.
 
 ## Step 3 — Compare Counts Against README
 
-Read the current `README.md` and extract the published counts from the
-`<details><summary>📊 Pattern Counts` block:
+Read the current `README.md` and extract **ALL** published counts from the
+`<details><summary>📊 Pattern Counts` block. You MUST extract these fields:
 
-- GitHub: Partner Secret Types, Push Protection count
-- ADO: Partner Secret Types, Push Protection count
+**GitHub metrics:**
+- Partner Secret Types (the number before "with variants")
+- Push Protection count
+- Unique Partner Providers
+- Validity Check count
+- Base64 Support count
+- Extended Metadata count
+- Non-Partner Patterns count (the number in brackets)
+- Copilot Secret Scanning Patterns count (the number in brackets)
 
-Parse the same counts from the script output (Step 2).
+**ADO metrics:**
+- Partner Secret Types
+- Push Protection count
+- Non-Partner Patterns count
 
-**Regression check:** If any count dropped to 0, or decreased by more than 5%
-compared to the README, this is a script parsing failure — NOT a real change.
-Call `noop` with a message listing the regressed metrics and their
-before/after values. **Do NOT update cache SHAs** — the next run should retry.
+Parse the **same fields** from the script output (Step 2).
+
+**Regression check — MANDATORY before any PR:**
+
+Compare EVERY metric above between script output and README. Flag a
+regression if ANY of these are true:
+
+1. A count dropped to 0 when the README had a non-zero value
+2. A count decreased by more than 5% compared to the README
+3. A count that existed in the README is missing from script output
+
+If ANY regression is detected:
+- Call `noop` with a detailed message listing EACH regressed metric
+  with its before (README) and after (script) values
+- **Do NOT update cache SHAs** — the next run should retry
+- **Do NOT create a PR** — this is a script parsing failure, not a real change
+- Example: "Regression detected: Non-Partner Patterns 10→0, Copilot 1→0.
+  Likely a docs format change breaking the parser."
 
 **No change check:** If all counts match the README, the upstream change was
 cosmetic (no actual pattern count change). Call `noop` with a message like

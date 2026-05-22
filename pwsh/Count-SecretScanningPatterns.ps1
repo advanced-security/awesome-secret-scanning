@@ -176,20 +176,29 @@ if ($GHNonProviderMarkdown) {
     foreach ($line in $lines) {
         $trimmedLine = $line.Trim()
 
-        if ($trimmedLine -match '^###\s+Non-provider patterns') {
+        # Match both old "### Non-provider patterns" and new "## Supported generic patterns"
+        if ($trimmedLine -match '^#{2,3}\s+(Non-provider patterns|Supported generic patterns)') {
             $inNonProviderSection = $true
             $inCopilotSection = $false
             continue
         }
-        if ($trimmedLine -match '^\{\%\s*data variables\.secret-scanning\.copilot-secret-scanning' -or $trimmedLine -match '^###.*copilot.*secret.*scanning') {
+        # Match both old Copilot data variable/heading and new "## Supported AI-detected patterns"
+        if ($trimmedLine -match '^\{\%\s*data variables\.secret-scanning\.copilot-secret-scanning' -or
+            $trimmedLine -match '^#{2,3}.*copilot.*secret.*scanning' -or
+            $trimmedLine -match '^#{2,3}\s+Supported AI-detected patterns') {
             $inCopilotSection = $true
             $inNonProviderSection = $false
             continue
         }
-        if (($inNonProviderSection -or $inCopilotSection) -and $trimmedLine -match '^###\s+' -and $trimmedLine -notmatch 'copilot') {
+        # Exit section on next heading that isn't part of our sections
+        if (($inNonProviderSection -or $inCopilotSection) -and $trimmedLine -match '^#{2,3}\s+' -and
+            $trimmedLine -notmatch 'copilot' -and $trimmedLine -notmatch 'AI-detected' -and
+            $trimmedLine -notmatch 'generic patterns' -and $trimmedLine -notmatch 'Non-provider') {
             $inNonProviderSection = $false
             $inCopilotSection = $false
         }
+        # Skip Liquid ifversion/endif blocks but keep parsing inside them
+        if ($trimmedLine -match '^\{%\s*(ifversion|endif|else)') { continue }
         if ($inNonProviderSection -and $trimmedLine -match '^\|\s*Generic\s*\|\s*([^|]+?)\s*\|') {
             $tokenName = $matches[1].Trim()
             if ($tokenName -and $tokenName -ne 'Token') {
