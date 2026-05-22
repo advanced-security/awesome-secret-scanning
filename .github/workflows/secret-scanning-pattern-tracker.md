@@ -29,6 +29,7 @@ safe-outputs:
     preserve-branch-name: true
     allowed-files:
       - README.md
+    protected-files: allowed
   noop:
     max: 1
 steps:
