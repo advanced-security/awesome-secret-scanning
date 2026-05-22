@@ -80,8 +80,8 @@ If cache is missing (first run), treat all sources as changed.
 
 Run: `pwsh -File ./pwsh/Count-SecretScanningPatterns.ps1 -OutputFile /tmp/pattern-counts.md`
 
-If the script fails or exits non-zero, call `noop` with the error message,
-update the cache SHAs, and **stop**.
+If the script fails or exits non-zero, call `noop` with the error message.
+**Do NOT update cache SHAs on failure** — the next run should retry.
 
 Read `/tmp/pattern-counts.md` — this has the full markdown output.
 
@@ -98,12 +98,12 @@ Parse the same counts from the script output (Step 2).
 **Regression check:** If any count dropped to 0, or decreased by more than 5%
 compared to the README, this is a script parsing failure — NOT a real change.
 Call `noop` with a message listing the regressed metrics and their
-before/after values. Update the cache SHAs and **stop**.
+before/after values. **Do NOT update cache SHAs** — the next run should retry.
 
 **No change check:** If all counts match the README, the upstream change was
 cosmetic (no actual pattern count change). Call `noop` with a message like
 "Counts unchanged: GitHub {N} partners, ADO {N} partners". Update the cache
-SHAs and **stop**.
+SHAs and **stop** (cosmetic changes are safe to skip on future runs).
 
 ## Step 4 — Update README and Open PR
 
@@ -125,12 +125,25 @@ Only reach this step if counts actually changed and no regressions detected.
    - **Title**: A short celebratory summary (e.g. "Secret scanning adds 5 new partner patterns!")
    - **Body**: Before/after comparison table, links to source docs
 
-3. Update cache-memory `last-check-state.json` with new SHAs and timestamp
+3. **Only after the safe-output succeeds**, update cache-memory
+   `last-check-state.json` with new SHAs and timestamp
    (format `YYYY-MM-DDTHH-MM-SS`, no colons).
+
+## ⚠️ Cache Update Rules
+
+**Only update cache SHAs when the outcome is final and successful:**
+- ✅ `noop` because SHAs matched (no changes) — update timestamp only
+- ✅ `noop` because counts unchanged (cosmetic) — update SHAs
+- ✅ `create-pull-request` succeeded — update SHAs
+- ❌ Script failure — do NOT update (retry next run)
+- ❌ Regression detected — do NOT update (retry next run)
+- ❌ Any error or crash — do NOT update (retry next run)
+
+This ensures failed runs don't poison the cache and block future retries.
 
 ## Guidelines
 
 - **Always call a safe output before finishing** — this is the #1 priority.
-- Always update the cache SHAs so we don't reprocess the same commits.
+- **Never update cache SHAs before the safe-output call succeeds.**
 - Be celebratory in PR titles and bodies 🎉🚀📈
 - Keep the collapsible README block compact but informative.
