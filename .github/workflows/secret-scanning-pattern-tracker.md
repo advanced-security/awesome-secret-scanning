@@ -4,7 +4,7 @@ description: >-
   Azure DevOps. Detects new patterns and coverage updates, then opens
   celebratory PRs to update the README with the latest counts.
 engine:
-  model: sonnet
+  model: claude-sonnet-4.6
 on:
   schedule: daily
 permissions:
