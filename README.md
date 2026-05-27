@@ -6,16 +6,16 @@
 - [GitHub Docs](https://docs.github.com/en/enterprise-cloud@latest/code-security/reference/secret-security/supported-secret-scanning-patterns) - Supported secret scanning patterns
 - [advanced-security/advanced-security-material](https://github.com/advanced-security/advanced-security-material/blob/main/GHAS-on-GHES-feature-matrix.md#secret-scanning) - GitHub Enterprise Server Version/Feature Matrix
 
-<details><summary>📊 Pattern Counts — GitHub: 515 partner types, 433 with push protection | ADO: 332 partner types (Updated: 2026-05-22)</summary>
+<details><summary>📊 Pattern Counts — GitHub: 514 partner types, 443 with push protection | ADO: 332 partner types (Updated: 2026-05-27)</summary>
 
 # GitHub
 
-| [Secret Protection Inventory](https://docs.github.com/en/enterprise-cloud@latest/code-security/reference/secret-security/supported-secret-scanning-patterns) |2026-05-22 19:09:11Z |
+| [Secret Protection Inventory](https://docs.github.com/en/enterprise-cloud@latest/code-security/reference/secret-security/supported-secret-scanning-patterns) |2026-05-27 05:05:06Z |
 | --- | --- |
-| Number of Partner Secret Types | 515 (62 with variants) |
+| Number of Partner Secret Types | 514 (62 with variants) |
 | Number of Unique Partner Providers | 197 |
-| Number of Secret Types with Push Protection | 433 |
-| Number of Secret Types with Validity Check | 136 |
+| Number of Secret Types with Push Protection | 443 |
+| Number of Secret Types with Validity Check | 142 |
 | Number of Secret Types with Base64 Support | 21 |
 | Number of Secret Types with Extended Metadata | 32 |
 | Non-Partner Patterns | [10](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/secret-scanning-patterns#non-provider-patterns) (0 with validity checks) |
@@ -42,7 +42,7 @@
 </details>
 
 # Azure DevOps
-| Secret Scanning Inventory |2026-05-22 19:09:11Z |
+| Secret Scanning Inventory |2026-05-27 05:05:06Z |
 | --- | --- |
 | Number of Partner Secret Types | [332](https://learn.microsoft.com/en-us/azure/devops/repos/security/github-advanced-security-secret-scan-patterns?view=azure-devops#partner-provider-patterns) |
 | Number of Secret Types with Push Protection | 171 |
