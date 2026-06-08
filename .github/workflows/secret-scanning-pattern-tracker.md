@@ -32,6 +32,7 @@ safe-outputs:
     protected-files: allowed
   noop:
     max: 1
+    report-as-issue: false
 steps:
   - name: Install PowerShell-yaml module
     run: pwsh -c "Install-Module -Name PowerShell-yaml -Scope CurrentUser -Force -AcceptLicense 2>/dev/null"
@@ -45,7 +46,7 @@ steps:
 
 - Call `noop` if no README update is needed.
 - Call `create-pull-request` if the README was updated.
-- If anything fails or errors, call `noop` with an error description.
+- If anything fails or errors, call `report_incomplete` with a short reason and the error details.
 - **Never finish without calling a safe output.** Doing so files a failure issue.
 
 ## Overview
@@ -81,7 +82,8 @@ If cache is missing (first run), treat all sources as changed.
 
 Run: `pwsh -File ./pwsh/Count-SecretScanningPatterns.ps1 -OutputFile /tmp/pattern-counts.md`
 
-If the script fails or exits non-zero, call `noop` with the error message.
+If the script fails or exits non-zero, call `report_incomplete` with the
+error message.
 **Do NOT update cache SHAs on failure** — the next run should retry.
 
 Read `/tmp/pattern-counts.md` — this has the full markdown output.
@@ -118,8 +120,9 @@ regression if ANY of these are true:
 3. A count that existed in the README is missing from script output
 
 If ANY regression is detected:
-- Call `noop` with a detailed message listing EACH regressed metric
-  with its before (README) and after (script) values
+- Call `report_incomplete` with reason `Regression detected` and details
+  listing EACH regressed metric with its before (README) and after (script)
+  values
 - **Do NOT update cache SHAs** — the next run should retry
 - **Do NOT create a PR** — this is a script parsing failure, not a real change
 - Example: "Regression detected: Non-Partner Patterns 10→0, Copilot 1→0.
