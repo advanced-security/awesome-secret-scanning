@@ -3,14 +3,13 @@ description: >-
   Daily monitor for secret scanning pattern changes across GitHub and
   Azure DevOps. Detects new patterns and coverage updates, then opens
   celebratory PRs to update the README with the latest counts.
-engine:
-  model: claude-sonnet-4.6
 on:
   schedule: daily
 permissions:
   contents: read
-features:
-  copilot-requests: true
+  issues: read
+  pull-requests: read
+  copilot-requests: write
 tools:
   github:
     toolsets: [repos]
