@@ -72,6 +72,7 @@
 - [advanced-security/probot-security-alerts](https://github.com/advanced-security/probot-security-alerts) - Sample GitHub App which monitors and enforces rules for code scanning, Dependabot, and secret scanning alerts
 
 ## Tools
+- [sentinel-cli/sentinel](https://github.com/sentinel-cli/sentinel) - A statically compiled, zero-dependency Git pre-commit secret scanner written in Go, optimized for speed and low memory footprint.
 - [nicolaswill/ghes-secret-scanning-automation-tools](https://github.com/nicolaswill/ghes-secret-scanning-automation-tools) - enable automatic resolution and reopening of Secret Scanning alerts on GitHub Enterprise Server
 - [cisco-open/gitguardian-to-ghas-importer](https://github.com/cisco-open/gitguardian-to-ghas-importer) - A Python tool that automatically closes GitHub Advanced Security (GHAS) secret scanning alerts by matching them with previously triaged false positives from GitGuardian exports.
 
