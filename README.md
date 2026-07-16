@@ -6,18 +6,18 @@
 - [GitHub Docs](https://docs.github.com/en/enterprise-cloud@latest/code-security/reference/secret-security/supported-secret-scanning-patterns) - Supported secret scanning patterns
 - [advanced-security/advanced-security-material](https://github.com/advanced-security/advanced-security-material/blob/main/GHAS-on-GHES-feature-matrix.md#secret-scanning) - GitHub Enterprise Server Version/Feature Matrix
 
-<details><summary>📊 Pattern Counts — GitHub: 519 partner types, 458 with push protection | ADO: 332 partner types (Updated: 2026-06-25)</summary>
+<details><summary>📊 Pattern Counts — GitHub: 521 partner types, 459 with push protection | ADO: 332 partner types (Updated: 2026-07-16)</summary>
 
 # GitHub
 
-| [Secret Protection Inventory](https://docs.github.com/en/enterprise-cloud@latest/code-security/reference/secret-security/supported-secret-scanning-patterns) |2026-06-25 04:58:01Z |
+| [Secret Protection Inventory](https://docs.github.com/en/enterprise-cloud@latest/code-security/reference/secret-security/supported-secret-scanning-patterns) |2026-07-16 04:40:06Z |
 | --- | --- |
-| Number of Partner Secret Types | 519 (62 with variants) |
-| Number of Unique Partner Providers | 199 |
-| Number of Secret Types with Push Protection | 458 |
+| Number of Partner Secret Types | 521 (62 with variants) |
+| Number of Unique Partner Providers | 201 |
+| Number of Secret Types with Push Protection | 459 |
 | Number of Secret Types with Validity Check | 165 |
 | Number of Secret Types with Base64 Support | 21 |
-| Number of Secret Types with Extended Metadata | 38 |
+| Number of Secret Types with Extended Metadata | 63 |
 | Non-Partner Patterns | [10](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/secret-scanning-patterns#non-provider-patterns) (0 with validity checks) |
 | Copilot Secret Scanning Patterns | [1](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/introduction/supported-secret-scanning-patterns#copilot-secret-scanning) |
 | Inventory Commit History | [Docs](https://github.com/github/docs/blob/main/src/secret-scanning/data/pattern-docs/ghec/public-docs.yml)
@@ -43,7 +43,7 @@
 </details>
 
 # Azure DevOps
-| Secret Scanning Inventory |2026-06-25 04:58:01Z |
+| Secret Scanning Inventory |2026-07-16 04:40:06Z |
 | --- | --- |
 | Number of Partner Secret Types | [332](https://learn.microsoft.com/en-us/azure/devops/repos/security/github-advanced-security-secret-scan-patterns?view=azure-devops#partner-provider-patterns) |
 | Number of Secret Types with Push Protection | 171 |
