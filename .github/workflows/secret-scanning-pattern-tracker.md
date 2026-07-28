@@ -18,6 +18,7 @@ network:
   allowed:
     - defaults
     - github
+    - learn.microsoft.com
 safe-outputs:
   create-pull-request:
     max: 1
