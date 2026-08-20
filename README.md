@@ -74,6 +74,7 @@
 ## Tools
 - [nicolaswill/ghes-secret-scanning-automation-tools](https://github.com/nicolaswill/ghes-secret-scanning-automation-tools) - enable automatic resolution and reopening of Secret Scanning alerts on GitHub Enterprise Server
 - [cisco-open/gitguardian-to-ghas-importer](https://github.com/cisco-open/gitguardian-to-ghas-importer) - A Python tool that automatically closes GitHub Advanced Security (GHAS) secret scanning alerts by matching them with previously triaged false positives from GitGuardian exports.
+- [virantisofficial/vooda.ai](https://github.com/virantisofficial/vooda.ai) - Self-hosted secrets detection platform that complements GHAS secret scanning with AI triage, live credential verification, and non-human identity governance.
 
 ## Secret Remediation
 - [advanced-security/GSSAR](https://github.com/advanced-security/GSSAR) - GitHub Secret Scanning Auto Remediator (GSSAR)
