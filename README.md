@@ -1,6 +1,7 @@
 # Awesome GitHub secret scanning  [![Awesome](https://awesome.re/badge.svg)](https://awesome.re)
 
-> A curated list of awesome GitHub Advanced Security secret scanning resources.
+> A curated list of awesome GitHub Advanced Security Secret Protection resources.
+> We acknoledge that there are many secret scanners out there that are pretty awesome, but this repo will keep the list directly related to Advanced Security features.
 
 ## Secret Scanning Patterns
 - [GitHub Docs](https://docs.github.com/en/enterprise-cloud@latest/code-security/reference/secret-security/supported-secret-scanning-patterns) - Supported secret scanning patterns
