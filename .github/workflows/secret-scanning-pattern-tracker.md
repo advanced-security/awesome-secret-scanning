@@ -3,6 +3,7 @@ description: >-
   Daily monitor for secret scanning pattern changes across GitHub and
   Azure DevOps. Detects new patterns and coverage updates, then opens
   celebratory PRs to update the README with the latest counts.
+model: auto
 on:
   schedule: daily
 permissions:
