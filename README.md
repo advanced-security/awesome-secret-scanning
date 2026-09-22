@@ -76,6 +76,7 @@
 ## Tools
 - [nicolaswill/ghes-secret-scanning-automation-tools](https://github.com/nicolaswill/ghes-secret-scanning-automation-tools) - enable automatic resolution and reopening of Secret Scanning alerts on GitHub Enterprise Server
 - [cisco-open/gitguardian-to-ghas-importer](https://github.com/cisco-open/gitguardian-to-ghas-importer) - A Python tool that automatically closes GitHub Advanced Security (GHAS) secret scanning alerts by matching them with previously triaged false positives from GitGuardian exports.
+- [KeyDrift](https://keydrift.dev) - Scans deployed HTML and JavaScript for exposed secrets while recognizing public browser credentials that should not be treated as leaks.
 
 ## Secret Remediation
 - [advanced-security/GSSAR](https://github.com/advanced-security/GSSAR) - GitHub Secret Scanning Auto Remediator (GSSAR)
