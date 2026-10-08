@@ -6,9 +6,10 @@ description: >-
   and stays silent whenever there is any plausible integration.
 model: auto
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, reopened, ready_for_review]
     forks: ["*"]
+  roles: all
 permissions:
   contents: read
   issues: read
@@ -25,6 +26,7 @@ network:
     - github
 safe-outputs:
   add-comment:
+    target: "triggering"
     max: 1
   close-pull-request:
     target: "triggering"
@@ -38,12 +40,12 @@ safe-outputs:
 
 ## ⚠️ CRITICAL RULE — Read This First
 
-**You MUST call exactly one safe output before finishing — no exceptions.**
+**You MUST choose exactly one outcome before finishing — no exceptions.**
 
 - Call `noop` when the pull request is in scope, ambiguous, or not a list
   submission at all. **`noop` is the default and safest outcome.**
-- Call `add-comment` **and** `close-pull-request` (both, in that order) only
-  when the submission is *clearly* unrelated to GitHub Secret Protection.
+- When the submission is *clearly* unrelated to GitHub Secret Protection, call
+  `add-comment` and then `close-pull-request` as one outcome.
 - If anything fails or you cannot gather enough information, call
   `report_incomplete` with a short reason.
 - **Never finish without calling a safe output.**
