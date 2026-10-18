@@ -72,6 +72,7 @@
 ## Tools
 - [nicolaswill/ghes-secret-scanning-automation-tools](https://github.com/nicolaswill/ghes-secret-scanning-automation-tools) - enable automatic resolution and reopening of Secret Scanning alerts on GitHub Enterprise Server
 - [cisco-open/gitguardian-to-ghas-importer](https://github.com/cisco-open/gitguardian-to-ghas-importer) - A Python tool that automatically closes GitHub Advanced Security (GHAS) secret scanning alerts by matching them with previously triaged false positives from GitGuardian exports.
+- [usezn/zn](https://github.com/usezn/zn) - Local security layer for coding agents: redacts secret values before they reach the model, moves .env values into an encrypted local vault, and audits prompts, configs and agent files for leaked secrets (CLI and GitHub Action). MIT, no account.
 
 ## Secret Remediation
 - [advanced-security/GSSAR](https://github.com/advanced-security/GSSAR) - GitHub Secret Scanning Auto Remediator (GSSAR)
