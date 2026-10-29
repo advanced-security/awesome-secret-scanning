@@ -8,12 +8,13 @@ param(
     [string]$OutputFile = ""
 )
 
-$script:hasErrors = $false
+$ErrorActionPreference = 'Stop'
 
 # Install the PowerShell-yaml module if not already installed
 if (-not (Get-Module -Name PowerShell-yaml -ListAvailable)) {
-    Install-Module -Name PowerShell-yaml -Scope CurrentUser -Force
+    Install-Module -Name PowerShell-yaml -Scope CurrentUser -Force -ErrorAction Stop
 }
+Import-Module PowerShell-yaml -ErrorAction Stop
 
 # Resolve Liquid ifversion templates to a boolean for a given platform (ghec, ghes, or fpt)
 function Resolve-LiquidBool {
@@ -36,10 +37,11 @@ function Resolve-LiquidBool {
 $url = 'https://raw.githubusercontent.com/github/docs/main/src/secret-scanning/data/pattern-docs/ghec/public-docs.yml'
 try {
     $data = Invoke-RestMethod -Uri $url | ConvertFrom-Yaml
+    if (-not $data -or @($data | Where-Object { -not $_.provider -or -not $_.secretType }).Count) {
+        throw 'GitHub GHEC pattern data is empty or invalid.'
+    }
 } catch {
-    Write-Error "Failed to fetch GitHub GHEC data from $url : $_"
-    $script:hasErrors = $true
-    $data = @()
+    throw "Failed to fetch GitHub GHEC data from $url : $_"
 }
 
 $inventory = @()
@@ -69,12 +71,16 @@ try {
     Write-Host "Fetching GHES versions from: $ghesContentsUrl"
     $ghesContents = Invoke-RestMethod -Uri $ghesContentsUrl -Headers @{ 'User-Agent' = 'Count-SecretScanningPatterns' }
     $ghesVersions = $ghesContents | Where-Object { $_.name -match '^ghes-\d+\.\d+$' } | ForEach-Object { $_.name -replace 'ghes-', '' } | Sort-Object { [version]$_ }
+    if (-not $ghesVersions) { throw 'No GHES versions found.' }
     Write-Host "Found $($ghesVersions.Count) GHES versions: $($ghesVersions -join ', ')"
 
     foreach ($ghesVer in $ghesVersions) {
         $ghesUrl = "https://raw.githubusercontent.com/github/docs/main/src/secret-scanning/data/pattern-docs/ghes-$ghesVer/public-docs.yml"
         try {
             $ghesData = Invoke-RestMethod -Uri $ghesUrl | ConvertFrom-Yaml
+            if (-not $ghesData -or @($ghesData | Where-Object { -not $_.provider -or -not $_.secretType }).Count) {
+                throw "GHES $ghesVer pattern data is empty or invalid."
+            }
             $ghesValidityCount = ($ghesData | Where-Object { Resolve-LiquidBool $_.hasValidityCheck 'ghes' } | Measure-Object).Count
             $ghesPushCount = ($ghesData | Where-Object { Resolve-LiquidBool $_.hasPushProtection 'ghes' } | Measure-Object).Count
             $ghesBase64Count = ($ghesData | Where-Object { Resolve-LiquidBool $_.base64Supported 'ghes' } | Measure-Object).Count
@@ -88,71 +94,58 @@ try {
                 'ExtendedMetadataCount'  = $ghesExtendedMetadataCount
             }
         } catch {
-            Write-Warning "Failed to fetch GHES $ghesVer data: $_"
+            throw "Failed to fetch GHES $ghesVer data: $_"
         }
     }
 } catch {
-    Write-Error "Failed to get GHES versions list: $_"
-    $script:hasErrors = $true
+    throw "Failed to get GHES data: $_"
 }
 
 # --- Azure DevOps Provider/Non-Provider Parsing ---
-function ConvertFrom-AdoProviderMarkdown {
+function ConvertFrom-AdoDocumentation {
     param(
-        [string]$Markdown
+        [string]$Html,
+        [string]$Section,
+        [switch]$NonProvider
     )
+    $sectionPattern = '(?is)<h[1-6]\b[^>]*\bid=["'']' + [regex]::Escape($Section) +
+        '["''][^>]*>.*?</h[1-6]>(?<content>.*?)(?=<h[1-3]\b|\z)'
+    $sectionMatch = [regex]::Match($Html, $sectionPattern)
+    $table = [regex]::Match($sectionMatch.Groups['content'].Value, '(?is)<table\b[^>]*>.*?</table>')
+    if (-not $table.Success) { throw "ADO documentation table '$Section' not found." }
+
     $results = @()
-    $lines = $Markdown -split "`n"
-    foreach ($raw in $lines) {
-        $line = $raw.Trim()
-        if (-not $line.StartsWith('|')) { continue }
-        if ($line -match '^\|\s*-+\s*\|') { continue }
-
-        $matched = $false
-        if (-not $matched -and $line -match '^\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*)\|\s*([^|]*)\|\s*([^|]*)\|$') {
-            $rule   = ($matches[1]).Trim()
-            $token  = ($matches[2]).Trim()
-            $push   = ($matches[3]).Trim()
-            $user   = ($matches[4]).Trim()
-            $valid  = ($matches[5]).Trim()
-            $matched = $true
-            $isNonProvider = $false
+    foreach ($row in [regex]::Matches($table.Value, '(?is)<tr\b[^>]*>(.*?)</tr>')) {
+        $cells = @([regex]::Matches($row.Groups[1].Value, '(?is)<td\b[^>]*>(.*?)</td>') | ForEach-Object {
+            $cell = $_.Groups[1].Value -replace '(?is)<img\b[^>]*\balt=["'']([^"'']*)["''][^>]*>', '$1'
+            [System.Net.WebUtility]::HtmlDecode(($cell -replace '<[^>]+>', '')).Trim()
+        })
+        if (-not $cells.Count) { continue }
+        $expectedColumns = if ($NonProvider) { 4 } else { 5 }
+        if ($cells.Count -ne $expectedColumns -or -not $cells[0] -or -not $cells[1]) {
+            throw "Invalid row in ADO documentation table '$Section'."
         }
-        if (-not $matched -and $line -match '^\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*)\|\s*([^|]*)\|$') {
-            $rule   = ($matches[1]).Trim()
-            $token  = ($matches[2]).Trim()
-            $push   = ''
-            $user   = ($matches[3]).Trim()
-            $valid  = ($matches[4]).Trim()
-            $matched = $true
-            $isNonProvider = $true
-        }
-
-        if ($matched) {
-            if ($rule -eq 'Rule ID') { continue }
-            if (-not $rule) { continue }
-
-            $test = { param($v) if (-not $v) { return $false } return $v -match '(?i)green|checkmark|true|yes' }
-            $results += [pscustomobject]@{
-                RuleID           = $rule
-                TokenName        = $token
-                PushProtection   = $(if ($isNonProvider) { $false } else { & $test $push })
-                UserAlerts       = (& $test $user)
-                ValidityChecking = (& $test $valid)
-                IsNonProvider    = $isNonProvider
-            }
+        $test = { param($v) return $v -match '(?i)green|check\s*mark|true|yes' }
+        $results += [pscustomobject]@{
+            RuleID           = $cells[0]
+            TokenName        = $cells[1]
+            PushProtection   = $(if ($NonProvider) { $false } else { & $test $cells[2] })
+            UserAlerts       = (& $test $cells[$expectedColumns - 2])
+            ValidityChecking = (& $test $cells[$expectedColumns - 1])
+            IsNonProvider    = [bool]$NonProvider
         }
     }
+    if (-not $results.Count) { throw "ADO documentation table '$Section' is empty." }
     return $results
 }
 
-$ADOProviderTable = Invoke-RestMethod -Uri 'https://raw.githubusercontent.com/MicrosoftDocs/azure-devops-docs/refs/heads/main/docs/repos/security/includes/provider-table.md' | Out-String
-$ADOProviders = ConvertFrom-AdoProviderMarkdown -Markdown $ADOProviderTable
+$ADODocsUrl = 'https://learn.microsoft.com/en-us/azure/devops/repos/security/github-advanced-security-secret-scan-patterns?view=azure-devops'
+$ADODocumentation = (Invoke-WebRequest -Uri $ADODocsUrl).Content
+$ADOProviders = @(ConvertFrom-AdoDocumentation -Html $ADODocumentation -Section 'partner-provider-patterns')
 $ADOProvidersPush = $ADOProviders | Where-Object { $_.PushProtection }
 $ADOProvidersValidity = $ADOProviders | Where-Object { $_.ValidityChecking }
 
-$ADONonProviderTable = Invoke-RestMethod -Uri 'https://raw.githubusercontent.com/MicrosoftDocs/azure-devops-docs/refs/heads/main/docs/repos/security/includes/non-provider-table.md' | Out-String
-$ADONonProviders = ConvertFrom-AdoProviderMarkdown -Markdown $ADONonProviderTable
+$ADONonProviders = @(ConvertFrom-AdoDocumentation -Html $ADODocumentation -Section 'non-provider-patterns' -NonProvider)
 $ADONonProvidersPush = $ADONonProviders | Where-Object { $_.PushProtection }
 $ADONonProvidersValidity = $ADONonProviders | Where-Object { $_.ValidityChecking }
 
@@ -161,8 +154,7 @@ $GHNonProviderMarkdown = $null
 try {
     $GHNonProviderMarkdown = Invoke-RestMethod -Uri 'https://raw.githubusercontent.com/github/docs/refs/heads/main/content/code-security/reference/secret-security/supported-secret-scanning-patterns.md' | Out-String
 } catch {
-    Write-Error "Failed to fetch GitHub non-provider patterns markdown: $_"
-    $script:hasErrors = $true
+    throw "Failed to fetch GitHub non-provider patterns markdown: $_"
 }
 
 $GHNonProviderPatterns = @()
@@ -216,6 +208,9 @@ if ($GHNonProviderMarkdown) {
 
 $GHNonProviderCount = ($GHNonProviderPatterns | Select-Object -Unique).Count
 $GHCopilotCount = ($GHCopilotPatterns | Select-Object -Unique).Count
+if (-not $GHNonProviderCount -or -not $GHCopilotCount) {
+    throw 'GitHub non-provider or Copilot patterns are empty or could not be parsed.'
+}
 
 # --- Build Markdown Output ---
 $comment = @"
@@ -252,8 +247,7 @@ $($GHESInventory | ForEach-Object { "| [$($_.GHESVersion)](https://docs.github.c
 | Number of Secret Types with Validity Check | $($ADOProvidersValidity.Count + $ADONonProvidersValidity.Count) |
 | Non-Partner Patterns | [$($ADONonProviders.Count)](https://learn.microsoft.com/en-us/azure/devops/repos/security/github-advanced-security-secret-scan-patterns?view=azure-devops#non-provider-patterns) ( $($ADONonProvidersValidity.Count) with validity checks) |
 | Copilot Secret Scanning Patterns | 0 |
-| Inventory Commit History | [Docs](https://raw.githubusercontent.com/MicrosoftDocs/azure-devops-docs/refs/heads/main/docs/repos/security/includes/provider-table.md) [Docs NonPartner](https://raw.githubusercontent.com/MicrosoftDocs/azure-devops-docs/refs/heads/main/docs/repos/security/includes/non-provider-table.md)
-| Secret Scanning Changes | [Commits](https://github.com/MicrosoftDocs/azure-devops-docs/commits/main/docs/repos/security/includes/provider-table.md) [Commits Non-Partner](https://github.com/MicrosoftDocs/azure-devops-docs/commits/main/docs/repos/security/includes/non-provider-table.md)|
+| Secret Scanning Documentation | [Microsoft Learn]($ADODocsUrl) |
 "@
 
 Write-Host $comment
@@ -261,9 +255,4 @@ Write-Host $comment
 if ($OutputFile) {
     $comment | Out-File -FilePath $OutputFile -Encoding utf8
     Write-Host "`nMarkdown written to: $OutputFile"
-}
-
-if ($script:hasErrors) {
-    Write-Warning "Some data sources encountered errors. Counts may be incomplete."
-    exit 1
 }
