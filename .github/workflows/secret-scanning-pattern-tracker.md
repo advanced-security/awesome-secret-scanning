@@ -14,7 +14,6 @@ permissions:
 tools:
   github:
     toolsets: [repos]
-  cache-memory: true
 network:
   allowed:
     - defaults
@@ -35,8 +34,11 @@ safe-outputs:
     max: 1
     report-as-issue: false
 steps:
-  - name: Install PowerShell-yaml module
-    run: pwsh -c "Install-Module -Name PowerShell-yaml -Scope CurrentUser -Force -AcceptLicense 2>/dev/null"
+  - name: Count secret scanning patterns on the host
+    shell: pwsh
+    run: |
+      New-Item -ItemType Directory -Path /tmp/gh-aw -Force | Out-Null
+      ./pwsh/Count-SecretScanningPatterns.ps1 -OutputFile /tmp/gh-aw/pattern-counts.md
 ---
 
 # 🔍 Secret Scanning Pattern Tracker
@@ -55,41 +57,21 @@ steps:
 You monitor secret scanning documentation across GitHub and Azure DevOps.
 When pattern counts change, you update the README and open a PR.
 
-## Step 1 — Check for Source Changes
+## Step 1 — Read the Pattern Counts
 
-First, read `last-check-state.json` from cache-memory. Schema:
+The host setup step runs `pwsh/Count-SecretScanningPatterns.ps1` before the
+agent starts. It installs and imports PowerShell-yaml on the host, fetches
+GitHub data and the published Microsoft Learn ADO tables, and fails the job
+if a required source cannot be fetched or parsed.
 
-```json
-{
-  "github_docs_sha": "<SHA>",
-  "ado_provider_sha": "<SHA>",
-  "ado_non_provider_sha": "<SHA>",
-  "last_run": "YYYY-MM-DDTHH-MM-SS"
-}
-```
+Read `/tmp/gh-aw/pattern-counts.md`. This shared file has the full markdown
+output. If it is missing or empty, call `report_incomplete` and stop.
+Do not install modules or rerun the script inside the agent sandbox.
 
-Then fetch the latest commit SHA for each source using `list_commits` (1 result each):
+Counts are fetched every run. Do not query or compare commit SHAs from
+`MicrosoftDocs/azure-devops-docs`, which is no longer publicly accessible.
 
-1. `github/docs` — path `src/secret-scanning/data/pattern-docs/`
-2. `MicrosoftDocs/azure-devops-docs` — path `docs/repos/security/includes/provider-table.md`
-3. `MicrosoftDocs/azure-devops-docs` — path `docs/repos/security/includes/non-provider-table.md`
-
-If **all three SHAs match** the cache → call `noop` with message
-"No changes detected since {last_run}" → update cache timestamp → **stop**.
-
-If cache is missing (first run), treat all sources as changed.
-
-## Step 2 — Run the Counting Script
-
-Run: `pwsh -File ./pwsh/Count-SecretScanningPatterns.ps1 -OutputFile /tmp/pattern-counts.md`
-
-If the script fails or exits non-zero, call `report_incomplete` with the
-error message.
-**Do NOT update cache SHAs on failure** — the next run should retry.
-
-Read `/tmp/pattern-counts.md` — this has the full markdown output.
-
-## Step 3 — Compare Counts Against README
+## Step 2 — Compare Counts Against README
 
 Read the current `README.md` and extract **ALL** published counts from the
 `<details><summary>📊 Pattern Counts` block. You MUST extract these fields:
@@ -109,7 +91,7 @@ Read the current `README.md` and extract **ALL** published counts from the
 - Push Protection count
 - Non-Partner Patterns count
 
-Parse the **same fields** from the script output (Step 2).
+Parse the **same fields** from the script output (Step 1).
 
 **Regression check — MANDATORY before any PR:**
 
@@ -124,17 +106,15 @@ If ANY regression is detected:
 - Call `report_incomplete` with reason `Regression detected` and details
   listing EACH regressed metric with its before (README) and after (script)
   values
-- **Do NOT update cache SHAs** — the next run should retry
 - **Do NOT create a PR** — this is a script parsing failure, not a real change
 - Example: "Regression detected: Non-Partner Patterns 10→0, Copilot 1→0.
   Likely a docs format change breaking the parser."
 
 **No change check:** If all counts match the README, the upstream change was
 cosmetic (no actual pattern count change). Call `noop` with a message like
-"Counts unchanged: GitHub {N} partners, ADO {N} partners". Update the cache
-SHAs and **stop** (cosmetic changes are safe to skip on future runs).
+"Counts unchanged: GitHub {N} partners, ADO {N} partners" and **stop**.
 
-## Step 4 — Update README and Open PR
+## Step 3 — Update README and Open PR
 
 Only reach this step if counts actually changed and no regressions detected.
 
@@ -144,7 +124,7 @@ Only reach this step if counts actually changed and no regressions detected.
    ```
    <details><summary>📊 Pattern Counts — GitHub: {N} partner types, {N} with push protection | ADO: {N} partner types (Updated: YYYY-MM-DD)</summary>
 
-   {full script output from /tmp/pattern-counts.md}
+   {full script output from /tmp/gh-aw/pattern-counts.md}
 
    </details>
    ```
@@ -154,25 +134,8 @@ Only reach this step if counts actually changed and no regressions detected.
    - **Title**: A short celebratory summary (e.g. "Secret scanning adds 5 new partner patterns!")
    - **Body**: Before/after comparison table, links to source docs
 
-3. **Only after the safe-output succeeds**, update cache-memory
-   `last-check-state.json` with new SHAs and timestamp
-   (format `YYYY-MM-DDTHH-MM-SS`, no colons).
-
-## ⚠️ Cache Update Rules
-
-**Only update cache SHAs when the outcome is final and successful:**
-- ✅ `noop` because SHAs matched (no changes) — update timestamp only
-- ✅ `noop` because counts unchanged (cosmetic) — update SHAs
-- ✅ `create-pull-request` succeeded — update SHAs
-- ❌ Script failure — do NOT update (retry next run)
-- ❌ Regression detected — do NOT update (retry next run)
-- ❌ Any error or crash — do NOT update (retry next run)
-
-This ensures failed runs don't poison the cache and block future retries.
-
 ## Guidelines
 
 - **Always call a safe output before finishing** — this is the #1 priority.
-- **Never update cache SHAs before the safe-output call succeeds.**
 - Be celebratory in PR titles and bodies 🎉🚀📈
 - Keep the collapsible README block compact but informative.
