@@ -7,13 +7,13 @@
 - [GitHub Docs](https://docs.github.com/en/enterprise-cloud@latest/code-security/reference/secret-security/supported-secret-scanning-patterns) - Supported secret scanning patterns
 - [advanced-security/advanced-security-material](https://github.com/advanced-security/advanced-security-material/blob/main/GHAS-on-GHES-feature-matrix.md#secret-scanning) - GitHub Enterprise Server Version/Feature Matrix
 
-<details><summary>📊 Pattern Counts — GitHub: 531 partner types, 465 with push protection | ADO: 456 partner types (Updated: 2026-10-21)</summary>
+<details><summary>📊 Pattern Counts — GitHub: 532 partner types, 465 with push protection | ADO: 456 partner types (Updated: 2026-11-10)</summary>
 
 # GitHub
 
-| [Secret Protection Inventory](https://docs.github.com/en/enterprise-cloud@latest/code-security/reference/secret-security/supported-secret-scanning-patterns) |2026-10-21 03:49:38Z |
+| [Secret Protection Inventory](https://docs.github.com/en/enterprise-cloud@latest/code-security/reference/secret-security/supported-secret-scanning-patterns) |2026-11-10 03:38:05Z |
 | --- | --- |
-| Number of Partner Secret Types | 531 (62 with variants) |
+| Number of Partner Secret Types | 532 (62 with variants) |
 | Number of Unique Partner Providers | 207 |
 | Number of Secret Types with Push Protection | 465 |
 | Number of Secret Types with Validity Check | 165 |
@@ -29,7 +29,6 @@
 
 | GHES Version | Count | Push Protection | Validity Check | Base64 | Extended Metadata |
 | --- | --- | --- | --- | --- | --- |
-| [3.18](https://docs.github.com/en/enterprise-server@3.18/code-security/reference/secret-security/supported-secret-scanning-patterns) | 361 | 242 | 5 | 0 | 0 |
 | [3.19](https://docs.github.com/en/enterprise-server@3.19/code-security/reference/secret-security/supported-secret-scanning-patterns) | 448 | 341 | 5 | 4 | 0 |
 | [3.20](https://docs.github.com/en/enterprise-server@3.20/code-security/reference/secret-security/supported-secret-scanning-patterns) | 478 | 365 | 122 | 20 | 0 |
 | [3.21](https://docs.github.com/en/enterprise-server@3.21/code-security/reference/secret-security/supported-secret-scanning-patterns) | 501 | 417 | 127 | 20 | 5 |
@@ -41,15 +40,14 @@
 </details>
 
 # Azure DevOps
-| Secret Scanning Inventory |2026-10-21 03:49:38Z |
+| Secret Scanning Inventory |2026-11-10 03:38:05Z |
 | --- | --- |
 | Number of Partner Secret Types | [456](https://learn.microsoft.com/en-us/azure/devops/repos/security/github-advanced-security-secret-scan-patterns?view=azure-devops#partner-provider-patterns) |
 | Number of Secret Types with Push Protection | 242 |
 | Number of Secret Types with Validity Check | 258 |
 | Non-Partner Patterns | [18](https://learn.microsoft.com/en-us/azure/devops/repos/security/github-advanced-security-secret-scan-patterns?view=azure-devops#non-provider-patterns) ( 6 with validity checks) |
 | Copilot Secret Scanning Patterns | 0 |
-| Inventory Commit History | [Docs](https://raw.githubusercontent.com/MicrosoftDocs/azure-devops-docs/refs/heads/main/docs/repos/security/includes/provider-table.md) [Docs NonPartner](https://raw.githubusercontent.com/MicrosoftDocs/azure-devops-docs/refs/heads/main/docs/repos/security/includes/non-provider-table.md)
-| Secret Scanning Changes | [Commits](https://github.com/MicrosoftDocs/azure-devops-docs/commits/main/docs/repos/security/includes/provider-table.md) [Commits Non-Partner](https://github.com/MicrosoftDocs/azure-devops-docs/commits/main/docs/repos/security/includes/non-provider-table.md)|
+| Secret Scanning Documentation | [Microsoft Learn](https://learn.microsoft.com/en-us/azure/devops/repos/security/github-advanced-security-secret-scan-patterns?view=azure-devops) |
 
 </details>
 
